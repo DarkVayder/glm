@@ -1,31 +1,21 @@
 import React, { useState } from 'react';
-import { collection, addDoc } from 'firebase/firestore';
-import { db } from '../firebase';
 import { toast } from 'react-toastify';
 
-const AddItemForm = () => {
+const AddItemForm = ({ addItem }) => {
   const [itemName, setItemName] = useState('');
   const [category, setCategory] = useState('Fruits');
 
-  const handleAddItem = async (e) => {
+  const handleAddItem = (e) => {
     e.preventDefault();
-    if (!itemName || !category) {
-      toast.error('Please fill all fields.');
+    if (!itemName) {
+      toast.error('Please enter an item name.');
       return;
     }
 
-    try {
-      await addDoc(collection(db, 'groceryItems'), {
-        name: itemName,
-        category,
-        checked: false,
-      });
-      toast.success('Item added to list!');
-      setItemName('');
-      setCategory('Fruits');
-    } catch (error) {
-      toast.error('Failed to add item.');
-    }
+    const newItem = { name: itemName, category, checked: false };
+    addItem(newItem);
+    setItemName('');
+    setCategory('Fruits');
   };
 
   return (
@@ -35,19 +25,22 @@ const AddItemForm = () => {
         value={itemName}
         onChange={(e) => setItemName(e.target.value)}
         placeholder="Item name"
-        className="border p-2 w-full mb-2"
+        className="border p-3 w-full mb-3 text-lg md:text-xl rounded-lg"
       />
       <select
         value={category}
         onChange={(e) => setCategory(e.target.value)}
-        className="border p-2 w-full mb-2"
+        className="border p-3 w-full mb-3 text-lg md:text-xl rounded-lg"
       >
         <option value="Fruits">Fruits</option>
         <option value="Vegetables">Vegetables</option>
         <option value="Dairy">Dairy</option>
         <option value="Snacks">Snacks</option>
       </select>
-      <button type="submit" className="bg-green-500 text-white p-2 w-full">
+      <button
+        type="submit"
+        className="bg-blue-600 hover:bg-blue-800 text-white py-2 px-4 w-full rounded-lg text-lg md:text-xl"
+      >
         Add Item
       </button>
     </form>

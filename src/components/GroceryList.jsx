@@ -1,40 +1,36 @@
-// src/components/GroceryList.js
-import React, { useEffect, useState } from 'react';
-import { collection, onSnapshot, deleteDoc, doc, query, where } from 'firebase/firestore';
-import { db } from '../firebase';
-import { toast } from 'react-toastify';
+import React from 'react';
 import GroceryItem from './GroceryItem';
+import { toast } from 'react-toastify';
 
-const GroceryList = ({ selectedCategory }) => {
-  const [items, setItems] = useState([]);
+const GroceryList = ({ items, setItems, selectedCategory }) => {
+  const filterItems = () =>
+    selectedCategory
+      ? items.filter((item) => item.category === selectedCategory)
+      : items;
 
-  useEffect(() => {
-    const itemsRef = collection(db, 'groceryItems');
+  const handleRemoveItem = (id) => {
+    setItems((prevItems) => prevItems.filter((item) => item.id !== id));
+    toast.success('Item removed from list!');
+  };
 
-    const q = selectedCategory
-      ? query(itemsRef, where('category', '==', selectedCategory))
-      : itemsRef;
-
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      setItems(snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })));
-    });
-
-    return unsubscribe;
-  }, [selectedCategory]);
-
-  const handleRemoveItem = async (id) => {
-    try {
-      await deleteDoc(doc(db, 'groceryItems', id));
-      toast.success('Item removed from list!');
-    } catch (error) {
-      toast.error('Failed to remove item.');
-    }
+  const toggleChecked = (id) => {
+    setItems((prevItems) =>
+      prevItems.map((item) =>
+        item.id === id ? { ...item, checked: !item.checked } : item
+      )
+    );
+    toast.success('Item status updated!');
   };
 
   return (
     <div>
-      {items.map((item) => (
-        <GroceryItem key={item.id} item={item} handleRemoveItem={handleRemoveItem} />
+      {filterItems().map((item) => (
+        <GroceryItem
+          key={item.id}
+          item={item}
+          toggleChecked={toggleChecked}
+          handleRemoveItem={handleRemoveItem}
+        />
       ))}
     </div>
   );
